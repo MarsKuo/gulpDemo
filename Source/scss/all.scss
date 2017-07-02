@@ -1,0 +1,13 @@
+$primary-color: blue;
+
+
+body {
+    color: $primary-color;
+}
+
+
+
+.card{
+    transform: rotate(120deg);
+    filter: blur(3px);
+}
