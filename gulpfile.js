@@ -35,17 +35,26 @@ gulp.task('clean', () => {
         .pipe($.clean());
 });
 
-gulp.task('CopyHtml', function () {
-    return gulp.src('./source/**/*.html')
-        .pipe(gulp.dest('./public/'))
-})
+// gulp.task('CopyHtml', function () {
+//     return gulp.src('./source/**/*.html')
+//         .pipe(gulp.dest('./public/'))
+// })
 
 
 gulp.task('jade', () => {
     return gulp.src(['./source/**/*.jade'])
         .pipe($.plumber()) //執行出錯，不中斷
+        .pipe($.data(function (file) {
+            var json = require('./source/data/data.json');
+            var menus = require('./source/data/menu.json');
+            var source = {
+              data: json,
+              menus: menus
+            }
+            return source;
+          }))
         .pipe($.jade({ pretty: true }))
-        .pipe(gulp.dest('./public/'))
+        .pipe(gulp.dest('./public'))
         .pipe(browserSync.reload({
             stream: true,
         }));
@@ -56,7 +65,7 @@ gulp.task('babel', function () {
     return gulp.src(['./source/javascripts/**/*.js'])
         .pipe($.plumber()) //執行出錯，不中斷
         .pipe($.sourcemaps.init())
-        .pipe($.concat('all.js'))
+        .pipe($.concat('all.js')) //合併JS
         .pipe($.babel({
             presets: ['es2015']
         }))
@@ -71,7 +80,7 @@ gulp.task('babel', function () {
         .pipe($.sourcemaps.write('.'))
         .pipe(gulp.dest('./public/javascripts'))
         .pipe(browserSync.reload({
-            stream: true,
+            stream: true
         }));
 });
 
@@ -92,62 +101,66 @@ gulp.task('bower', function () {
 
 //執行vendorJs會先做bower，所以watch不用call bower
 gulp.task('vendorJs', ['bower'], function () {
-    return gulp.src('./.tmp/vendors/**/**.js')
+    return gulp.src([
+        './.tmp/vendors/**/**.js',
+        './node_modules/bootstrap/dist/js/bootstrap.bundle.min.js'
+    ])
         .pipe($.order([   //排序，因為bootstrap相依jquery
-            'jquery.js',
-            'bootstrap.js'
+            'jquery.js'
         ]))
-        .pipe($.concat('vendors.js'))//合併
+        .pipe($.concat('vendor.js'))//合併
         .pipe($.if(options.env === 'production', $.uglify()))//js 如果傳入gulp --env production，就會壓縮 //壓縮
-        .pipe(gulp.dest('./public/js'));
+        .pipe(gulp.dest('./public/javascripts'));
 })
 
 
 gulp.task('sass', function () {
-
-    //宣告給postcss用的plugins
-    var plugins = [
-        autoprefixer({ browsers: ['last 2 version'] })
+    //宣告給PostCSS用的plugins AutoPrefixer
+    var processors = [
+        autoprefixer({
+            browsers: ['last 5 version'],
+        })
     ];
 
-    return gulp.src('./source/scss/**/*.scss')
+    return gulp.src(['./source/stylesheets/**/*.sass', './source/stylesheets/**/*.scss'])
         .pipe($.plumber()) //執行出錯，不中斷
         .pipe($.sourcemaps.init())//寫入sourcemaps方便debug，但實際只有一個request
-        .pipe($.sass().on('error', $.sass.logError))
-        .pipe($.postcss(plugins)) //透過postcss來執行autoprefixer
-        .pipe($.concat('all.css'))//合併CSS
+        .pipe($.sass({
+            outputStyle: 'nested',
+            includePaths: ['./node_modules/bootstrap/scss/']
+        })
+            .on('error', $.sass.logError))
+        .pipe($.postcss(processors)) //透過postcss來執行autoprefixer
+        //.pipe($.concat('all.css'))//合併CSS
         .pipe($.if(options.env === 'production', $.minifyCss()))//壓縮css 如果傳入gulp sass --env production，就會壓縮
         .pipe($.sourcemaps.write('.'))
-        .pipe(gulp.dest('./public/css'))//輸出到public/css
+        .pipe(gulp.dest('./public/stylesheets'))//輸出到public/css
         .pipe(browserSync.reload({
-            stream: true,
+            stream: true
         }));
 });
 
+gulp.task('imageMin', () => {
+    gulp.src('./source/images/*')
+        .pipe($.if(options.env === 'production', $.imagemin()))//圖片壓縮 如果傳入gulp --env production，就會壓縮
+        .pipe(gulp.dest('./public/images'));
+});
 
 
 
 //WebServer，並設定起始目錄
-gulp.task('browser-sync', function () {
+gulp.task('browserSync', function () {
     browserSync.init({
-        server: {
-            baseDir: "./public"
-        },
+        server: { baseDir: './public' },
         reloadDebounce: 2000
     })
 });
 
-gulp.task('image-min', () =>
-    gulp.src('./source/images/*')
-        .pipe($.if(options.env === 'production', $.imagemin()))//圖片壓縮 如果傳入gulp --env production，就會壓縮
-        .pipe(gulp.dest('./public/images'))
-);
-
 //監聽事件，並觸發function
 gulp.task('watch', function () {
-    gulp.watch('./source/scss/**/*.scss', ['sass']);
-    gulp.watch('./source/*.jade', ['jade']);
-    gulp.watch('./source/js/*.jade', ['babel']);
+    gulp.watch(['./source/stylesheets/**/*.sass', './source/stylesheets/**/*.scss'], ['sass']);
+    gulp.watch(['./source/**/*.jade'], ['jade']);
+    gulp.watch(['./source/javascripts/**/*.js'], ['babel']);
 });
 
 gulp.task('deploy', function () {
@@ -155,5 +168,6 @@ gulp.task('deploy', function () {
         .pipe($.ghPages());
 });
 
-gulp.task('build', gulpSequence('clean', 'jade', 'sass', 'vendorJs'))
-gulp.task('default', ['jade', 'sass', 'babel', 'vendorJs', 'browser-sync', 'image-min', 'watch'])
+gulp.task('sequence', gulpSequence('clean', 'jade', 'sass', 'babel', 'vendorJs', 'imageMin'));
+gulp.task('default', ['jade', 'sass', 'babel', 'vendorJs', 'browserSync', 'imageMin', 'watch']);
+gulp.task('build', ['sequence']);

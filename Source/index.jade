@@ -1,13 +1,41 @@
-<!DOCTYPE html>
-html(lang="en")
-head
-    meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    meta(http-equiv="X-UA-Compatible", content="ie=edge")
-    title Document
-    link(rel="stylesheet", href="css/all.css")
-    script(src="js/all.js")
-body
-   p  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maxime quos laboriosam modi, dolores autem molestias iste suscipit, expedita ducimus dicta porro commodi est magni. Distinctio possimus et beatae sed, dicta!
-   .acb Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima sequi possimus accusantium, nesciunt, blanditiis deserunt omnis unde rerum, eos quisquam aperiam neque veritatis nisi eveniet optio maxime magni consequuntur harum.
-   
+
+extends ./_layout.jade
+
+block navbar
+  - var path = 'index.html'
+  include partials/_navbar.jade
+
+block content
+  .bg-primary.py-5
+    .container.my-5
+      .text-center.mb-4
+        img.img-fluid(src="images/gulp-w.svg", alt="", width="100")
+      h1.text-center.text-white 
+        | Mars 
+        br.hidden-sm-up
+        | Gulp 教學範例頁面
+  section.container.my-5
+    h2.text-center.mb-5
+      | 課程特色
+    .row
+      .col-sm-4
+        .text-center
+          img(src="images/github-icon-1.svg", alt="" height="100")
+        h3.text-center.mt-4 課程範例開源
+        p 本次課程範例都在 Github 上，且會持續更新，另外還提供 Github Page 快速部屬案例給同學參考！
+      .col-sm-4
+        .text-center
+          img(src="images/sass-1.svg", alt="" height="100")
+        h3.text-center.mt-4 包含主流開發套件
+        p Sass（英文全稱：Syntactically Awesome Stylesheets）是一個最初由Hampton Catlin設計並由Natalie Weizenbaum開發的層疊樣式表語言。[1][2]在開發最初版本之後，Weizenbaum和Chris Eppstein繼續通過SassScript來繼續擴充Sass的功能。SassScript是一個在Sass文件中使用的小型腳本語言。
+      .col-sm-4
+        .text-center
+          img(src="images/es6.svg", alt="" height="100")
+        h3.text-center.mt-4 ES6 
+        p ECMAScript 6.0（以下简称 ES6）是 JavaScript 语言的下一代标准，已经在 2015 年 6 月正式发布了。它的目标，是使得 JavaScript 语言可以用来编写复杂的大型应用程序，成为企业级开发语言。
+  section.container.py-5
+    .text-center
+      a.btn.btn-danger(href="https://github.com/JiaHongL/gulp-demo") 開始學習 Gulp
+
+
+    
