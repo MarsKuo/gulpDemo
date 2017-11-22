@@ -1,0 +1,1 @@
+{"version":3,"sources":["all2.scss"],"names":[],"mappings":"AAGA;EAEI,yBALe,EAMlB","file":"all2.css","sourcesContent":["$Test-color: yellow;\r\n\r\n\r\nbody {\r\n    \r\n    background-color: $Test-color;\r\n}\r\n\r\n\r\n"]}
