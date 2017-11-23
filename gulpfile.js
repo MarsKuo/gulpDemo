@@ -40,6 +40,13 @@ gulp.task('clean', () => {
 //         .pipe(gulp.dest('./public/'))
 // })
 
+gulp.task('copy', function () {
+    gulp.src(['./source/**/**', '!source/stylesheets/**/**'])
+      .pipe(gulp.dest('./public/'))
+      .pipe(browserSync.reload({
+        stream: true
+      }));
+  });
 
 gulp.task('jade', () => {
     return gulp.src(['./source/**/*.jade'])
@@ -168,6 +175,12 @@ gulp.task('deploy', function () {
         .pipe($.ghPages());
 });
 
+//正常開發，全部都有
 gulp.task('sequence', gulpSequence('clean', 'jade', 'sass', 'babel', 'vendorJs', 'imageMin'));
 gulp.task('default', ['jade', 'sass', 'babel', 'vendorJs', 'browserSync', 'imageMin', 'watch']);
 gulp.task('build', ['sequence']);
+
+//無babel 純Html跟Sass，DEMO用
+// gulp.task('sequence', gulpSequence('clean', 'copy', 'sass', 'vendorJs', 'sass'));
+// gulp.task('default', ['copy', 'sass', 'vendorJs', 'browserSync', 'watch']);
+// gulp.task('build', ['sequence'])
